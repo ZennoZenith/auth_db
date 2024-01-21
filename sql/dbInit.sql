@@ -1,4 +1,4 @@
-CREATE DATABASE `AUTH_DB` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS `AUTH_DB` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 USE `AUTH_DB`;
 
@@ -42,7 +42,7 @@ CREATE TABLE `tenants` (
     `id` varchar(64) NOT NULL,
     `userId` varchar(64) NOT NULL,
     `appId` varchar(64) NOT NULL,
-    `role` varchar(256) NOT NULL,
+    `role` varchar(256) NOT NULL DEFAULT 'DEFAULT_TENANT',
     createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_tenants` (`appId`,`userId`),
@@ -93,6 +93,24 @@ CREATE TABLE `emailpassword_pswd_reset_tokens` (
     PRIMARY KEY (`tenantId`),
     UNIQUE KEY `token` (`token`),
     FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `users_staging` (
+    `id` varchar(64),
+    `firstName` varchar(64) NOT NULL,
+    `middleName` varchar(64) DEFAULT NULL,
+    `lastName` varchar(64) DEFAULT NULL,
+    `fullName` varchar(192) GENERATED ALWAYS AS (CONCAT_WS(' ',firstName, middleName, lastName)),
+    `phoneNumber` varchar(20) DEFAULT NULL,
+    `birthday` DATE DEFAULT NULL,
+    `userMetadata` JSON NOT NULL,
+    createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updatedAt timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+    `appId` varchar(64) NOT NULL,
+    `role` varchar(256) NOT NULL DEFAULT 'DEFAULT_TENANT',
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`role`) REFERENCES `roles` (`role`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO `roles` (`role`) VALUES ('SUDO'), ('ADMIN');
