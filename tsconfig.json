@@ -1,8 +1,63 @@
 {
+  "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "hono/jsx",
+    "lib": ["ESNext"],
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "types": [
+      "bun-types"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@tests/*": [
+        "__tests__/*"
+      ],
+      "@config/*": [
+        "src/config/*"
+      ],
+      "@domain/*": [
+        "src/domain/*"
+      ],
+      "@controller/*": [
+        "src/controller/*"
+      ],
+      "@middlewares/*": [
+        "src/middlewares/*"
+      ],
+      "@plugins/*": [
+        "src/plugins/*"
+      ],
+      "@database/*": [
+        "src/database/*"
+      ],
+      "@util/*": [
+        "src/util/*"
+      ],
+      "@routes/*": [
+        "src/routes/*"
+      ],
+      "@errors/*": [
+        "src/errors/*"
+      ],
+      "@server/*": [
+        "src/*"
+      ],
+      "@root/*": [
+        "src/*"
+      ]
+    }
   }
 }
