@@ -4,25 +4,12 @@ USE `AUTH_DB`;
 
 CREATE TABLE `apps` (
     `id` varchar(64) DEFAULT 'DEFAULT',
-    createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updatedAt timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (`id`)
+    `name` varchar(64) NOT NULL,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY (`name`)
 );
-
-CREATE TABLE `roles` (
-    `role` varchar(256) NOT NULL DEFAULT 'DEFAULT_TENANT',
-    PRIMARY KEY (`role`)
-);
-
-CREATE TABLE `role_permissions` (
-    `role` varchar(256) NOT NULL,
-    `permission` varchar(256) NOT NULL,
-    PRIMARY KEY (`role`, `permission`),
-    FOREIGN KEY (`role`) REFERENCES `roles` (`role`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-
-CREATE INDEX `role_permissions_index` ON `role_permissions` (`role`, `permission`);
 
 CREATE TABLE `users` (
     `id` varchar(64),
@@ -32,85 +19,115 @@ CREATE TABLE `users` (
     `fullName` varchar(192) GENERATED ALWAYS AS (CONCAT_WS(' ',firstName, middleName, lastName)),
     `phoneNumber` varchar(20) DEFAULT NULL,
     `birthday` DATE DEFAULT NULL,
+    `emailPasswordEnabled` tinyint NOT NULL DEFAULT 0,
+    `passwordlessEnabled` tinyint NOT NULL DEFAULT 0,
+    `thirdPartyEnabled` tinyint NOT NULL DEFAULT 0,
     `userMetadata` JSON NOT NULL,
-    createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updatedAt timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (`id`)
 );
+
+CREATE TABLE `user_last_active` (
+    `userId` varchar(64) NOT NULL,
+    `lastActiveIp` varchar(64) NOT NULL DEFAULT 'DEFAULT_IP',
+    `lastActiveTime` timestamp NOT NULL,
+    PRIMARY KEY (`userId`),
+    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `email_password_users` (
+    `userId` varchar(64) NOT NULL,
+    `email` varchar(256) DEFAULT NULL,
+    `hashedEmail` varchar(256) NOT NULL, 
+    `hashedPassword` varchar(256) NOT NULL,
+    `varified` tinyint NOT NULL DEFAULT 0,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (`userId`),
+    UNIQUE KEY `user_email_unique` (`hashedEmail`),
+    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `users_staging_email` (
+    `id` varchar(64) NOT NULL,
+    `email` varchar(256) NOT NULL,
+    `appId` varchar(64) NOT NULL,
+    `role` varchar(256) NOT NULL,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (`email`),
+    UNIQUE KEY (`id`)
+);
+
+CREATE TABLE `emailverification_tokens` (
+    `stagingUserId` varchar(64) NOT NULL,
+    `email` varchar(256) NOT NULL,
+    `token` varchar(128) NOT NULL,
+    `tokenExpiry` timestamp NOT NULL,
+    PRIMARY KEY (`stagingUserId`),
+    UNIQUE KEY `email_varification_token_unique` (`token`),
+    FOREIGN KEY (`stagingUserId`, `email`) REFERENCES `users_staging_email` (`id`, `email`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+CREATE TABLE `emailpassword_pswd_reset_tokens` (
+    `userId` varchar(64) NOT NULL,
+    `token` varchar(128) NOT NULL,
+    `tokenExpiry` timestamp NOT NULL,
+    `email` varchar(256) NOT NULL,
+    PRIMARY KEY (`userId`),
+    UNIQUE KEY `pswd_reset_token_unique` (`token`),
+    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `roles` (
+    `appId` varchar(64) NOT NULL DEFAULT 'DEFAULT',
+    `role` varchar(256) NOT NULL,
+    PRIMARY KEY (`appId`, `role`),
+    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `role_permissions` (
+    `appId` varchar(64) NOT NULL DEFAULT 'DEFAULT',
+    `role` varchar(256) NOT NULL,
+    `permission` varchar(256) NOT NULL,
+    PRIMARY KEY (`appId`, `role`, `permission`),
+    FOREIGN KEY (`appId`, `role`) REFERENCES `roles` (`appId`, `role`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX `role_permissions_index` ON `role_permissions` (`role`, `permission`);
 
 CREATE TABLE `tenants` (
     `id` varchar(64) NOT NULL,
     `userId` varchar(64) NOT NULL,
     `appId` varchar(64) NOT NULL,
-    `role` varchar(256) NOT NULL DEFAULT 'DEFAULT_TENANT',
-    createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `role` varchar(256) NOT NULL,
+    `useDefaultAuth` tinyint NOT NULL DEFAULT 1,
+    `config` JSON NOT NULL,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_tenants` (`appId`,`userId`),
-    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`role`) REFERENCES `roles` (`role`) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (`appId`, `role`) REFERENCES `roles` (`appId`, `role`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
-CREATE TABLE `tenant_configs` (
+CREATE TABLE `tenant_last_active` (
     `tenantId` varchar(64) NOT NULL,
-    `coreConfig` JSON NOT NULL,
-    `emailPasswordEnabled` tinyint NOT NULL DEFAULT 0,
-    `passwordlessEnabled` tinyint NOT NULL DEFAULT 0,
-    `thirdPartyEnabled` tinyint NOT NULL DEFAULT 0,
+    `lastActiveIp` varchar(64) NOT NULL DEFAULT 'DEFAULT_IP',
+    `lastActiveTime` timestamp NOT NULL,
     PRIMARY KEY (`tenantId`),
     FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE `emailpassword_users` (
+CREATE TABLE `username_password_tenants` (
     `tenantId` varchar(64) NOT NULL,
-    `email` varchar(256) DEFAULT NULL,
-    `hashedEmail` varchar(256) NOT NULL, 
-    `hashedPassword` varchar(256) NOT NULL,
-    `varified` tinyint NOT NULL DEFAULT 0,
-    createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (`tenantId`),
-    UNIQUE KEY `email_password_unique` (`tenantId`, `hashedEmail`),
-    FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE `emailverification_tokens` (
-    `tenantId` varchar(64) NOT NULL,
-    `email` varchar(256) NOT NULL,
-    `token` varchar(128) NOT NULL,
-    `tokenExpiry` timestamp NOT NULL,
-    PRIMARY KEY (`tenantId`, `email`, `token`),
-    UNIQUE KEY `email_varification_token_unique` (`token`),
-    FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-
-CREATE TABLE `emailpassword_pswd_reset_tokens` (
-    `tenantId` varchar(64) NOT NULL,
-    `token` varchar(128) NOT NULL,
-    `tokenExpiry` timestamp NOT NULL,
-    `email` varchar(256) NOT NULL,
-    PRIMARY KEY (`tenantId`),
-    UNIQUE KEY `token` (`token`),
-    FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE `users_staging` (
-    `id` varchar(64),
-    `firstName` varchar(64) NOT NULL,
-    `middleName` varchar(64) DEFAULT NULL,
-    `lastName` varchar(64) DEFAULT NULL,
-    `fullName` varchar(192) GENERATED ALWAYS AS (CONCAT_WS(' ',firstName, middleName, lastName)),
-    `phoneNumber` varchar(20) DEFAULT NULL,
-    `birthday` DATE DEFAULT NULL,
-    `userMetadata` JSON NOT NULL,
-    createdAt timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updatedAt timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
     `appId` varchar(64) NOT NULL,
-    `role` varchar(256) NOT NULL DEFAULT 'DEFAULT_TENANT',
-    PRIMARY KEY (`id`),
-    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`role`) REFERENCES `roles` (`role`) ON DELETE CASCADE ON UPDATE CASCADE
+    `username` varchar(256) DEFAULT NULL,
+    `hashedPassword` varchar(256) NOT NULL,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (`tenantId`),
+    UNIQUE KEY `username_appid_unique` (`username`, `appId`),
+    FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-INSERT INTO `roles` (`role`) VALUES ('SUDO'), ('ADMIN');
+INSERT INTO `apps` (`id`, `name`) VALUES ('DEFAULT' ,'My App');
