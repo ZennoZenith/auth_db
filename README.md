@@ -1,8 +1,6 @@
-```
-bun install
-bun run dev
-```
+## Introspecting database using dirzzle
 
-```
-open http://localhost:3000
+```sh
+drizzle-kit introspect:mysql --config=drizzle.railway.config.ts
+drizzle-kit introspect:mysql --config=drizzle.user.config.ts
 ```

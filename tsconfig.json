@@ -49,6 +49,9 @@
       "@routes/*": [
         "src/routes/*"
       ],
+      "@recipes/*": [
+        "src/recipes/*"
+      ],
       "@errors/*": [
         "src/errors/*"
       ],
