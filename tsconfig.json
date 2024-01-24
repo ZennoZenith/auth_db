@@ -52,6 +52,15 @@
       "@recipes/*": [
         "src/recipes/*"
       ],
+      "@validators": [
+        "src/validators"
+      ],
+      "@validators/*": [
+        "src/validators/*"
+      ],
+      "@errors": [
+        "src/errors"
+      ],
       "@errors/*": [
         "src/errors/*"
       ],

@@ -1,54 +1,64 @@
 import { Hono } from 'hono'
 import * as userDatabase from '@database/users.database'
-import {
-  email,
-  maxValue,
-  minLength,
-  minValue,
-  number,
-  object,
-  safeParse,
-  string,
-  toTrimmed,
-} from 'valibot'
-import { validator } from 'hono/validator'
 import { StatusCodes } from 'http-status-codes/build/cjs/status-codes'
-
+import {
+  createAppValidator,
+  createDashboardUserValidator,
+  createUserValidator,
+  signupValidator,
+} from '@validators'
 import { genUniqueUserId, hashUserDetails } from '@util/auth.util'
-import { BadRequestError, IAmATeapot, InternalServerError } from '@errors/index'
-import { stageUser } from '@recipes/auth.recipe'
+import {
+  createDashboardUserRecipe,
+  stageUserRecipe,
+} from '@recipes/auth.recipe'
+import { validator } from 'hono/validator'
 
 const app = new Hono()
 
 app.post(
-  `/signup`,
-  validator('json', (value) => {
-    const result = safeParse(
-      object({
-        email: string('Your email must be a string.', [
-          toTrimmed(),
-          minLength(1, 'Please enter your email.'),
-          email('The email address is badly formatted.'),
-        ]),
-      }),
-      value,
-    )
+  '/apps',
+  validator('json', (value) => createAppValidator(value)),
+  async (c) => {
+    const { id, name, emailVerificationTokenLifetimeInMs } = c.req.valid('json')
 
-    if (result.success) {
-      return {
-        email: result.output.email,
-      }
-    } else {
-      throw new BadRequestError({
-        message: result.issues.map((issue) => issue.message),
-      })
+    const data = await userDatabase.createApp({
+      id,
+      name,
+      emailVerificationTokenLifetimeInMs,
+    })
+
+    c.status(StatusCodes.OK)
+    return c.json({ data })
+  },
+)
+
+app.post(
+  '/dashboard-user',
+  validator('json', (value) => {
+    return {
+      ...createUserValidator(value),
+      ...createDashboardUserValidator(value),
     }
+    // return { ...createUserValidator(value) }
   }),
+  async (c) => {
+    const userData = c.req.valid('json')
+
+    const data = await createDashboardUserRecipe(userData)
+    c.status(StatusCodes.OK)
+    return c.json({ data })
+  },
+)
+
+app.post(
+  '/signup',
+  validator('json', (value) => signupValidator(value)),
   async (c) => {
     const { email } = c.req.valid('json')
     const id = await genUniqueUserId()
 
-    const data = await stageUser({
+    const data = await stageUserRecipe({
       id,
       email,
     })

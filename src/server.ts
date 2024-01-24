@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import defaultConf from '@config/defaultConfig'
+import { config } from '@config/config.setup'
 
 import security from '@middlewares/security.middleware'
 import { validateEnv } from '@util/index'
@@ -25,6 +25,6 @@ app.get('/', (c) => {
 ErrorHandler(app)
 
 export default {
-  port: defaultConf.port,
+  port: config.port,
   fetch: app.fetch,
 }

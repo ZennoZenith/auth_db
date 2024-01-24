@@ -1,5 +1,25 @@
 import crypto from 'crypto'
-import { BadRequestError, InternalServerError } from '@errors/index'
+
+type BufferEncoding =
+  | 'ascii'
+  | 'utf8'
+  | 'utf-8'
+  | 'utf16le'
+  | 'utf-16le'
+  | 'ucs2'
+  | 'ucs-2'
+  | 'base64'
+  | 'base64url'
+  | 'latin1'
+  | 'binary'
+  | 'hex'
+
+export function randomString(
+  length: number,
+  bufferEncoding: BufferEncoding = 'hex',
+) {
+  return crypto.randomBytes(length * 2 + 256).toString(bufferEncoding)
+}
 
 function hashEmail(email: string) {
   return crypto
@@ -15,22 +35,28 @@ export function hashAPIKey(token: string): string {
     .digest('base64')
 }
 
-export async function hashUserDetails(
-  { email, password }: { email: string; password: string },
-) {
-  const hashedEmail = hashEmail(email)
-  const hashedPassword = await Bun.password.hash(password, {
+export async function hashPassword(
+  password: string,
+  config: Parameters<typeof Bun.password.hash>[1] = {
     algorithm: 'argon2id',
 
     memoryCost: 4, // memory usage in kibibytes
     timeCost: 3, // the number of iterations
-  })
+  },
+) {
+  return await Bun.password.hash(password, config)
+}
 
+export async function hashUserDetails(
+  { email, password }: { email: string; password: string },
+) {
+  const hashedEmail = hashEmail(email)
+  const hashedPassword = hashPassword(password)
   return { hashedEmail, hashedPassword }
 }
 
 export async function genUniqueUserId(
-  apiKeyOrganization: 'user__id' = 'user__id',
+  apiKeyOrganization: 'user__id' | 'dash_usr' = 'user__id',
 ) {
   return `${apiKeyOrganization}.${crypto.randomUUID()}` as const
 }

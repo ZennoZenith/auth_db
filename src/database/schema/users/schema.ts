@@ -6,10 +6,8 @@ import {
   index,
   int,
   json,
-  mysqlEnum,
   mysqlTable,
   primaryKey,
-  smallint,
   timestamp,
   tinyint,
   unique,
@@ -17,37 +15,13 @@ import {
 } from 'drizzle-orm/mysql-core'
 import { sql } from 'drizzle-orm'
 
-export const apiKeys = mysqlTable('api_keys', {
-  tenantId: varchar('tenantId', { length: 64 }).notNull().references(
-    () => tenants.id,
-    { onDelete: 'cascade', onUpdate: 'cascade' },
-  ),
-  prefix: char('prefix', { length: 8 }).notNull(),
-  hashedApiKey: varchar('hashedApiKey', { length: 128 }).notNull(),
-  reqPerMin: smallint('reqPerMin', { unsigned: true }).default(10).notNull(),
-  reqPerMonth: int('reqPerMonth', { unsigned: true }).default(1000).notNull(),
-  createdAt: timestamp('createdAt', { mode: 'string' }).default(
-    sql`CURRENT_TIMESTAMP`,
-  ).notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'string' }).default(
-    sql`CURRENT_TIMESTAMP`,
-  ).onUpdateNow().notNull(),
-}, (table) => {
-  return {
-    apiKeysHashedApiKey: primaryKey({
-      columns: [table.hashedApiKey],
-      name: 'api_keys_hashedApiKey',
-    }),
-    tenantidPrefixUnique: unique('tenantid_prefix_UNIQUE').on(
-      table.tenantId,
-      table.prefix,
-    ),
-  }
-})
-
 export const apps = mysqlTable('apps', {
-  id: varchar('id', { length: 64 }).default('DEFAULT').notNull(),
+  id: varchar('id', { length: 64 }).notNull(),
   name: varchar('name', { length: 64 }).notNull(),
+  emailVerificationTokenLifetimeInMs: bigint(
+    'emailVerificationTokenLifetimeInMs',
+    { mode: 'number' },
+  ).default(86400000).notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).default(
     sql`CURRENT_TIMESTAMP`,
   ).notNull(),
@@ -58,6 +32,52 @@ export const apps = mysqlTable('apps', {
   return {
     appsId: primaryKey({ columns: [table.id], name: 'apps_id' }),
     name: unique('name').on(table.name),
+  }
+})
+
+export const dashboardUserSessions = mysqlTable('dashboard_user_sessions', {
+  userId: varchar('userId', { length: 64 }).notNull().references(
+    () => dashboardUsers.userId,
+    { onDelete: 'cascade' },
+  ),
+  sessionId: char('sessionId', { length: 36 }).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).default(
+    sql`CURRENT_TIMESTAMP`,
+  ).notNull(),
+  expiry: timestamp('expiry', { mode: 'string' }).notNull(),
+}, (table) => {
+  return {
+    expiryIdx: index('dashboard_user_sessions').on(table.expiry),
+    dashboardUserSessionsUserIdSessionId: primaryKey({
+      columns: [table.userId, table.sessionId],
+      name: 'dashboard_user_sessions_userId_sessionId',
+    }),
+  }
+})
+
+export const dashboardUsers = mysqlTable('dashboard_users', {
+  appId: varchar('appId', { length: 64 }).notNull().references(() => apps.id, {
+    onDelete: 'cascade',
+  }),
+  userId: varchar('userId', { length: 64 }).notNull().references(
+    () => users.id,
+    { onDelete: 'cascade', onUpdate: 'cascade' },
+  ),
+  username: varchar('username', { length: 256 }).notNull(),
+  hashedPassword: varchar('hashedPassword', { length: 256 }).notNull(),
+  failedAttempts: int('failedAttempts', { unsigned: true }).default(0)
+    .notNull(),
+  createdAt: timestamp('createdAt', { mode: 'string' }).default(
+    sql`CURRENT_TIMESTAMP`,
+  ).notNull(),
+}, (table) => {
+  return {
+    userId: index('userId').on(table.userId),
+    dashboardUsersAppIdUserId: primaryKey({
+      columns: [table.appId, table.userId],
+      name: 'dashboard_users_appId_userId',
+    }),
+    appId: unique('appId').on(table.appId, table.username),
   }
 })
 
@@ -128,38 +148,8 @@ export const emailverificationTokens = mysqlTable('emailverification_tokens', {
   }
 })
 
-export const rateLimiterTable = mysqlTable('rate_limiter_table', {
-  uniqueKey: varchar('uniqueKey', { length: 256 }).notNull(),
-  duration: mysqlEnum('duration', ['minute', 'hour', 'month']).notNull(),
-  remainingPoints: int('remainingPoints', { unsigned: true }).default(0)
-    .notNull(),
-  expireTime: bigint('expireTime', { mode: 'number' }).notNull(),
-}, (table) => {
-  return {
-    rateLimiterTableUniqueKeyDuration: primaryKey({
-      columns: [table.uniqueKey, table.duration],
-      name: 'rate_limiter_table_uniqueKey_duration',
-    }),
-  }
-})
-
-export const requestLog = mysqlTable('request_log', {
-  tenantId: varchar('tenantId', { length: 64 }).notNull().references(() =>
-    tenants.id
-  ),
-  prefix: char('prefix', { length: 8 }).notNull(),
-  status: smallint('status', { unsigned: true }).notNull(),
-  requestedAt: timestamp('requestedAt', { fsp: 3, mode: 'string' }).default(
-    sql`CURRENT_TIMESTAMP(3)`,
-  ).notNull(),
-}, (table) => {
-  return {
-    tenantId: index('tenantId').on(table.tenantId),
-  }
-})
-
 export const rolePermissions = mysqlTable('role_permissions', {
-  appId: varchar('appId', { length: 64 }).default('DEFAULT').notNull(),
+  appId: varchar('appId', { length: 64 }).notNull(),
   role: varchar('role', { length: 256 }).notNull(),
   permission: varchar('permission', { length: 256 }).notNull(),
 }, (table) => {
@@ -178,35 +168,15 @@ export const rolePermissions = mysqlTable('role_permissions', {
 })
 
 export const roles = mysqlTable('roles', {
-  appId: varchar('appId', { length: 64 }).default('DEFAULT').notNull()
-    .references(() => apps.id, { onDelete: 'cascade' }),
+  appId: varchar('appId', { length: 64 }).notNull().references(() => apps.id, {
+    onDelete: 'cascade',
+  }),
   role: varchar('role', { length: 256 }).notNull(),
 }, (table) => {
   return {
     rolesAppIdRole: primaryKey({
       columns: [table.appId, table.role],
       name: 'roles_appId_role',
-    }),
-  }
-})
-
-export const tenantApiInfo = mysqlTable('tenant_api_info', {
-  tenantId: varchar('tenantId', { length: 64 }).notNull().references(
-    () => tenants.id,
-    { onDelete: 'cascade', onUpdate: 'cascade' },
-  ),
-  pointsUsed: int('pointsUsed', { unsigned: true }).default(0).notNull(),
-  totalPoints: int('totalPoints', { unsigned: true }).default(10000).notNull(),
-  limitApiKeys: tinyint('limitApiKeys').default(2).notNull(),
-  lastApiKeyGenerateTime: bigint('lastApiKeyGenerateTime', {
-    mode: 'number',
-    unsigned: true,
-  }).default(1016476200).notNull(),
-}, (table) => {
-  return {
-    tenantApiInfoTenantId: primaryKey({
-      columns: [table.tenantId],
-      name: 'tenant_api_info_tenantId',
     }),
   }
 })
@@ -252,29 +222,6 @@ export const tenants = mysqlTable('tenants', {
     }).onDelete('cascade'),
     tenantsId: primaryKey({ columns: [table.id], name: 'tenants_id' }),
     uniqueTenants: unique('unique_tenants').on(table.appId, table.userId),
-  }
-})
-
-export const userApiLog = mysqlTable('user_api_log', {
-  ip: varchar('ip', { length: 46 }).notNull(),
-  tenantId: varchar('tenantId', { length: 64 }).notNull().references(() =>
-    tenants.id
-  ),
-  prefix: char('prefix', { length: 8 }).notNull(),
-  reqPerMin: smallint('reqPerMin', { unsigned: true }),
-  reqPerMonth: int('reqPerMonth', { unsigned: true }),
-  performedAction: mysqlEnum('performedAction', [
-    'CREATED',
-    'UPDATED',
-    'REGENERATED',
-    'DELETED',
-  ]).notNull(),
-  performedAt: timestamp('performedAt', { fsp: 3, mode: 'string' }).default(
-    sql`CURRENT_TIMESTAMP(3)`,
-  ).notNull(),
-}, (table) => {
-  return {
-    tenantId: index('tenantId').on(table.tenantId),
   }
 })
 

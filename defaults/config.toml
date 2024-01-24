@@ -8,13 +8,23 @@ core_config_version = 0
 
 
 # (OPTIONAL | Default: 6789) integer value. The port at which SuperTokens service runs.
-# port:
+port = 6789
+
+# (OPTIONAL | Default: 6789) string values. 
+cors = '*'
 
 
 # (OPTIONAL | Default: "localhost") string value. The host on which SuperTokens service runs. Values here can
 # be localhost, example.com, 0.0.0.0 or any IP address associated with your machine
-# host:
+host = 'localhost'
 
+
+# (DIFFERENT_ACROSS_APPS | OPTIONAL | Default: 86400000 (1 day)) long value. Time in milliseconds for how long an 
+emailVerificationTokenLifetime = 86400000
+
+
+# (OPTIONAL | Default: "dash_usr") string value. 
+dashboardUserIdPrefix = 'dash_usr'
 
 # (DIFFERENT_ACROSS_APPS | OPTIONAL | Default: 3600) integer value. Time in seconds for how long an access token is
 # valid for.
@@ -46,11 +56,6 @@ core_config_version = 0
 # (DIFFERENT_ACROSS_TENANTS | OPTIONAL | Default: 3600000) long value. Time in milliseconds for how long a password
 # reset token / link is valid for.
 # password_reset_token_lifetime:
-
-
-# (DIFFERENT_ACROSS_TENANTS | OPTIONAL | Default: 86400000 (1 day)) long value. Time in milliseconds for how long an 
-# email verification token / link is valid for.
-# email_verification_token_lifetime:
 
 
 # (DIFFERENT_ACROSS_TENANTS | OPTIONAL | Default: 5) integer value. The maximum number of code input attempts per login

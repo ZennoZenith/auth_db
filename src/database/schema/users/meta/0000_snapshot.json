@@ -4,103 +4,10 @@
   "version": "5",
   "dialect": "mysql",
   "tables": {
-    "api_keys": {
-      "name": "api_keys",
-      "columns": {
-        "tenantId": {
-          "autoincrement": false,
-          "name": "tenantId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "prefix": {
-          "autoincrement": false,
-          "name": "prefix",
-          "type": "char(8)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hashedApiKey": {
-          "autoincrement": false,
-          "name": "hashedApiKey",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reqPerMin": {
-          "default": 10,
-          "autoincrement": false,
-          "name": "reqPerMin",
-          "type": "smallint unsigned",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reqPerMonth": {
-          "default": 1000,
-          "autoincrement": false,
-          "name": "reqPerMonth",
-          "type": "int unsigned",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "default": "CURRENT_TIMESTAMP",
-          "autoincrement": false,
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updatedAt": {
-          "default": "CURRENT_TIMESTAMP",
-          "autoincrement": false,
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "onUpdate": true
-        }
-      },
-      "compositePrimaryKeys": {
-        "api_keys_hashedApiKey": {
-          "name": "api_keys_hashedApiKey",
-          "columns": [
-            "hashedApiKey"
-          ]
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "api_keys_ibfk_1": {
-          "name": "api_keys_ibfk_1",
-          "tableFrom": "api_keys",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenantId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "uniqueConstraints": {
-        "tenantid_prefix_UNIQUE": {
-          "name": "tenantid_prefix_UNIQUE",
-          "columns": [
-            "tenantId",
-            "prefix"
-          ]
-        }
-      }
-    },
     "apps": {
       "name": "apps",
       "columns": {
         "id": {
-          "default": "'DEFAULT'",
           "autoincrement": false,
           "name": "id",
           "type": "varchar(64)",
@@ -111,6 +18,14 @@
           "autoincrement": false,
           "name": "name",
           "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emailVerificationTokenLifetimeInMs": {
+          "default": 86400000,
+          "autoincrement": false,
+          "name": "emailVerificationTokenLifetimeInMs",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
@@ -147,6 +62,178 @@
           "name": "name",
           "columns": [
             "name"
+          ]
+        }
+      }
+    },
+    "dashboard_user_sessions": {
+      "name": "dashboard_user_sessions",
+      "columns": {
+        "userId": {
+          "autoincrement": false,
+          "name": "userId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessionId": {
+          "autoincrement": false,
+          "name": "sessionId",
+          "type": "char(36)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "default": "CURRENT_TIMESTAMP",
+          "autoincrement": false,
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expiry": {
+          "autoincrement": false,
+          "name": "expiry",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "dashboard_user_sessions_userId_sessionId": {
+          "name": "dashboard_user_sessions_userId_sessionId",
+          "columns": [
+            "userId",
+            "sessionId"
+          ]
+        }
+      },
+      "indexes": {
+        "dashboard_user_sessions_expiry_index": {
+          "name": "dashboard_user_sessions_expiry_index",
+          "columns": [
+            "expiry"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "dashboard_user_sessions_ibfk_1": {
+          "name": "dashboard_user_sessions_ibfk_1",
+          "tableFrom": "dashboard_user_sessions",
+          "tableTo": "dashboard_users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "userId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "dashboard_users": {
+      "name": "dashboard_users",
+      "columns": {
+        "appId": {
+          "autoincrement": false,
+          "name": "appId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "autoincrement": false,
+          "name": "userId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "autoincrement": false,
+          "name": "username",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hashedPassword": {
+          "autoincrement": false,
+          "name": "hashedPassword",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "failedAttempts": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "failedAttempts",
+          "type": "int unsigned",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "default": "CURRENT_TIMESTAMP",
+          "autoincrement": false,
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "dashboard_users_appId_userId": {
+          "name": "dashboard_users_appId_userId",
+          "columns": [
+            "appId",
+            "userId"
+          ]
+        }
+      },
+      "indexes": {
+        "userId": {
+          "name": "userId",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "dashboard_users_ibfk_1": {
+          "name": "dashboard_users_ibfk_1",
+          "tableFrom": "dashboard_users",
+          "tableTo": "apps",
+          "columnsFrom": [
+            "appId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "dashboard_users_ibfk_2": {
+          "name": "dashboard_users_ibfk_2",
+          "tableFrom": "dashboard_users",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "uniqueConstraints": {
+        "appId": {
+          "name": "appId",
+          "columns": [
+            "appId",
+            "username"
           ]
         }
       }
@@ -373,119 +460,10 @@
         }
       }
     },
-    "rate_limiter_table": {
-      "name": "rate_limiter_table",
-      "columns": {
-        "uniqueKey": {
-          "autoincrement": false,
-          "name": "uniqueKey",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "duration": {
-          "autoincrement": false,
-          "name": "duration",
-          "type": "enum('minute','hour','month')",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "remainingPoints": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "remainingPoints",
-          "type": "int unsigned",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expireTime": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "expireTime",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {
-        "rate_limiter_table_uniqueKey_duration": {
-          "name": "rate_limiter_table_uniqueKey_duration",
-          "columns": [
-            "uniqueKey",
-            "duration"
-          ]
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "uniqueConstraints": {}
-    },
-    "request_log": {
-      "name": "request_log",
-      "columns": {
-        "tenantId": {
-          "autoincrement": false,
-          "name": "tenantId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "prefix": {
-          "autoincrement": false,
-          "name": "prefix",
-          "type": "char(8)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "status",
-          "type": "smallint unsigned",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "requestedAt": {
-          "default": "CURRENT_TIMESTAMP(3)",
-          "autoincrement": false,
-          "name": "requestedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {
-        "tenantId": {
-          "name": "tenantId",
-          "columns": [
-            "tenantId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "request_log_ibfk_1": {
-          "name": "request_log_ibfk_1",
-          "tableFrom": "request_log",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenantId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "uniqueConstraints": {}
-    },
     "role_permissions": {
       "name": "role_permissions",
       "columns": {
         "appId": {
-          "default": "'DEFAULT'",
           "autoincrement": false,
           "name": "appId",
           "type": "varchar(64)",
@@ -550,7 +528,6 @@
       "name": "roles",
       "columns": {
         "appId": {
-          "default": "'DEFAULT'",
           "autoincrement": false,
           "name": "appId",
           "type": "varchar(64)",
@@ -588,75 +565,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "tenant_api_info": {
-      "name": "tenant_api_info",
-      "columns": {
-        "tenantId": {
-          "autoincrement": false,
-          "name": "tenantId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pointsUsed": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "pointsUsed",
-          "type": "int unsigned",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "totalPoints": {
-          "default": 10000,
-          "autoincrement": false,
-          "name": "totalPoints",
-          "type": "int unsigned",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "limitApiKeys": {
-          "default": 2,
-          "autoincrement": false,
-          "name": "limitApiKeys",
-          "type": "tinyint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lastApiKeyGenerateTime": {
-          "default": 1016476200,
-          "autoincrement": false,
-          "name": "lastApiKeyGenerateTime",
-          "type": "bigint unsigned",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {
-        "tenant_api_info_tenantId": {
-          "name": "tenant_api_info_tenantId",
-          "columns": [
-            "tenantId"
-          ]
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "tenant_api_info_ibfk_1": {
-          "name": "tenant_api_info_ibfk_1",
-          "tableFrom": "tenant_api_info",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenantId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
         }
       },
       "uniqueConstraints": {}
@@ -832,87 +740,6 @@
           ]
         }
       }
-    },
-    "user_api_log": {
-      "name": "user_api_log",
-      "columns": {
-        "ip": {
-          "autoincrement": false,
-          "name": "ip",
-          "type": "varchar(46)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tenantId": {
-          "autoincrement": false,
-          "name": "tenantId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "prefix": {
-          "autoincrement": false,
-          "name": "prefix",
-          "type": "char(8)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reqPerMin": {
-          "autoincrement": false,
-          "name": "reqPerMin",
-          "type": "smallint unsigned",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reqPerMonth": {
-          "autoincrement": false,
-          "name": "reqPerMonth",
-          "type": "int unsigned",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "performedAction": {
-          "autoincrement": false,
-          "name": "performedAction",
-          "type": "enum('CREATED','UPDATED','REGENERATED','DELETED')",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "performedAt": {
-          "default": "CURRENT_TIMESTAMP(3)",
-          "autoincrement": false,
-          "name": "performedAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {
-        "tenantId": {
-          "name": "tenantId",
-          "columns": [
-            "tenantId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "user_api_log_ibfk_1": {
-          "name": "user_api_log_ibfk_1",
-          "tableFrom": "user_api_log",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenantId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "uniqueConstraints": {}
     },
     "user_last_active": {
       "name": "user_last_active",

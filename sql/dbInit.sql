@@ -3,8 +3,9 @@ CREATE DATABASE IF NOT EXISTS `AUTH_DB` DEFAULT CHARACTER SET utf8mb4 COLLATE ut
 USE `AUTH_DB`;
 
 CREATE TABLE `apps` (
-    `id` varchar(64) DEFAULT 'DEFAULT',
+    `id` varchar(64),
     `name` varchar(64) NOT NULL,
+    `emailVerificationTokenLifetimeInMs` bigint NOT NULL DEFAULT 86400000,
     `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (`id`),
@@ -35,6 +36,30 @@ CREATE TABLE `user_last_active` (
     PRIMARY KEY (`userId`),
     FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE `dashboard_users` (
+    `appId` varchar(64) NOT NULL,
+    `userId` varchar(64) NOT NULL,
+    `username` varchar(256) NOT NULL,
+    `hashedPassword` varchar(256) NOT NULL,
+    `failedAttempts` int unsigned NOT NULL DEFAULT 0,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (`appId`,`userId`),
+    UNIQUE KEY (`appId`,`username`),
+    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `dashboard_user_sessions` (
+    `userId` varchar(64) NOT NULL,
+    `sessionId` char(36) NOT NULL,
+    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    `expiry` timestamp NOT NULL,
+    PRIMARY KEY (`userId`,`sessionId`),
+    FOREIGN KEY (`userId`) REFERENCES `dashboard_users` (`userId`) ON DELETE CASCADE
+);
+CREATE INDEX `dashboard_user_sessions_expiry_index` ON `dashboard_user_sessions` (`expiry`);
+
 
 CREATE TABLE `email_password_users` (
     `userId` varchar(64) NOT NULL,
@@ -80,14 +105,14 @@ CREATE TABLE `emailpassword_pswd_reset_tokens` (
 );
 
 CREATE TABLE `roles` (
-    `appId` varchar(64) NOT NULL DEFAULT 'DEFAULT',
+    `appId` varchar(64) NOT NULL,
     `role` varchar(256) NOT NULL,
     PRIMARY KEY (`appId`, `role`),
     FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `role_permissions` (
-    `appId` varchar(64) NOT NULL DEFAULT 'DEFAULT',
+    `appId` varchar(64) NOT NULL,
     `role` varchar(256) NOT NULL,
     `permission` varchar(256) NOT NULL,
     PRIMARY KEY (`appId`, `role`, `permission`),
