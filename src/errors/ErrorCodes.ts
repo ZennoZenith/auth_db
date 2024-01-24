@@ -7,7 +7,7 @@ export type ApiExtraError = {
   [key: string]: any
 }
 
-const BASE_PATH = 'https://docs.railwayapi.site'
+const BASE_PATH = ''
 
 export type ApiErrorObject = {
   readonly httpCode: StatusCodes
@@ -27,7 +27,7 @@ const ApiErrors = [
     title: 'Undocumented error',
     description:
       'Undocumented error has occured. Developers have been notified.',
-    href: `${BASE_PATH}/errorcodes#UnDocumentedError`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -39,7 +39,7 @@ const ApiErrors = [
     title: 'Too many request',
     description:
       'Too many request. Check Ratelimit-Reset header for reset rate limit time or contact developer.',
-    href: `${BASE_PATH}/errorcodes#TooManyReqeust`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -50,7 +50,7 @@ const ApiErrors = [
     type: 'NotFound',
     title: 'Resource not found',
     description: 'No resource found for given parameters.',
-    href: `${BASE_PATH}/errorcodes#NotFound`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -61,7 +61,7 @@ const ApiErrors = [
     type: 'RouteNotExist',
     title: 'Route does not exist',
     description: 'Route does not exist.',
-    href: `${BASE_PATH}/errorcodes#RouteNotExist`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -72,7 +72,7 @@ const ApiErrors = [
     type: 'Unauthorized',
     title: 'Unauthorized',
     description: 'User not authorized. Check if the API key correct.',
-    href: `${BASE_PATH}/errorcodes#Unauthorized`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -83,7 +83,7 @@ const ApiErrors = [
     type: 'Forbidden',
     title: 'Forbidden',
     description: 'User does not have previlage for this method/route.',
-    href: `${BASE_PATH}/errorcodes#Forbidden`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -95,7 +95,7 @@ const ApiErrors = [
     title: 'IAmATeapot',
     description:
       'The server refuses to brew coffee because it is, permanently, a teapot.',
-    href: `${BASE_PATH}/errorcodes#IAmATeapot`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -106,7 +106,7 @@ const ApiErrors = [
     type: 'InternalServerError',
     title: 'Internal Server Error',
     description: 'Internal server occured. Developers have been notified.',
-    href: `${BASE_PATH}/errorcodes#InternalServerError`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -117,7 +117,7 @@ const ApiErrors = [
     type: 'BadRequest',
     title: 'Bad Request',
     description: 'Generic bad request. Check documentation for current route.',
-    href: `${BASE_PATH}/errorcodes#BadRequest`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -129,7 +129,7 @@ const ApiErrors = [
     title: 'Query parameter unspecified',
     description:
       'One or more query parameter is unspecified. See current route docs for more details.',
-    href: `${BASE_PATH}/errorcodes#QueryStringUnspecified`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -141,7 +141,7 @@ const ApiErrors = [
     title: 'Url parameter undpecified',
     description:
       'Url parameter is unspecified. See current route docs for more details.',
-    href: `${BASE_PATH}/errorcodes#UrlParameterUnspecified`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -153,7 +153,7 @@ const ApiErrors = [
     title: 'Request body invalid',
     description:
       'Some properties in request body is unspecified. Check message for more information.',
-    href: `${BASE_PATH}/errorcodes#ReqBodyInvalid`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -164,7 +164,7 @@ const ApiErrors = [
     type: 'NoContent',
     title: 'No content',
     description: 'There is no content to send.',
-    href: `${BASE_PATH}/errorcodes#NoContent`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -175,7 +175,7 @@ const ApiErrors = [
     type: 'Conflict',
     title: 'Conflict',
     description: 'There is an error when creating or updating data.',
-    href: `${BASE_PATH}/errorcodes#Conflict`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -186,7 +186,7 @@ const ApiErrors = [
     type: 'UnableToUpdate',
     title: 'Unable to update',
     description: 'Cannot update due to some unknown error.',
-    href: `${BASE_PATH}/errorcodes#UnableToUpdate`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -197,7 +197,7 @@ const ApiErrors = [
     type: 'UnableToDelete',
     title: 'Unable to delete',
     description: 'Delete operation was unsuccessful.',
-    href: `${BASE_PATH}/errorcodes#UnableToDelete`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
@@ -208,7 +208,7 @@ const ApiErrors = [
     type: 'DontCare',
     title: "Don't care error",
     description: 'Developer did not care enough to write better error response',
-    href: `${BASE_PATH}/errorcodes#DontCare`,
+    href: `${BASE_PATH}/`,
     extra: {
       message: '',
     },
