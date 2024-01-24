@@ -7,7 +7,7 @@ import {
   MysqlErrorNumber,
 } from './MysqlErrorCodes'
 
-import CustomError from './custom-api'
+import CustomError from './custom-error'
 
 export default class MysqlError extends CustomError {
   static IsMysqlError(errorNumber: number): boolean

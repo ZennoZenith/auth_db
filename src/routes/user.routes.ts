@@ -4,7 +4,7 @@ import {
   createDashboardUserValidator,
   createUserValidator,
   signupValidator,
-} from '@validators'
+} from '@validators/user.validator'
 import { genUniqueUserId } from '@util/auth.util'
 import {
   createDashboardUserRecipe,

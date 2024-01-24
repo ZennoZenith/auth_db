@@ -1,5 +1,5 @@
 import { ApiErrorObject, GetApiErrorObject } from '@errors/ErrorCodes'
-import CustomAPIError from '@errors/custom-api'
+import { CustomError } from '@errors'
 // import { ErrorLogger } from '@util/logger.util'
 import { Hono } from 'hono'
 
@@ -22,11 +22,12 @@ export function ErrorHandler(
   })
 
   app.onError((err, c) => {
-    let errorObj: ApiErrorObject = GetApiErrorObject('UnDocumentedError')
-    if (err instanceof CustomAPIError) {
+    let errorObj: ApiErrorObject
+    if (err instanceof CustomError) {
       // console.error(err)
       errorObj = err.errorObj
     } else {
+      errorObj = GetApiErrorObject('UnDocumentedError')
       errorObj.extra = {
         message: 'Catastrophic error occured.',
       }

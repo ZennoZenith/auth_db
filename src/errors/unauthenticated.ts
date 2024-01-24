@@ -1,4 +1,4 @@
-import CustomError from './custom-api'
+import CustomError from './custom-error'
 import { ApiErrorType, ApiExtraError } from './ErrorCodes'
 
 export default class UnauthenticatedError extends CustomError {

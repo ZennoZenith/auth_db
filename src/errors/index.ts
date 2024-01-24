@@ -1,4 +1,4 @@
-import CustomError from './custom-api'
+import CustomError from './custom-error'
 import UnauthenticatedError from './unauthenticated'
 import Forbidden from './forbidden'
 import NotFoundError from './not-found'
@@ -15,7 +15,7 @@ import IAmATeapot from './i-am-a-teapot'
 export {
   BadRequestError,
   ConflictError,
-  CustomError as CustomAPIError,
+  CustomError,
   DontCareError,
   Forbidden,
   IAmATeapot,

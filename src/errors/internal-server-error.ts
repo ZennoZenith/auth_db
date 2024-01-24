@@ -1,4 +1,4 @@
-import CustomError from './custom-api'
+import CustomError from './custom-error'
 import { ApiExtraError } from './ErrorCodes'
 
 export default class InternalServerError extends CustomError {
