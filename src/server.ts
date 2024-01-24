@@ -3,7 +3,8 @@ import { config } from '@config/config.setup'
 
 import security from '@middlewares/security.middleware'
 import { validateEnv } from '@util/index'
-import authRoute from '@routes/auth.routes'
+import sudoRoute from '@routes/sudo.routes'
+import userRoute from '@routes/user.routes'
 import { ErrorHandler } from '@middlewares/error-handler.middleware'
 import { ApiErrorObject } from '@errors/ErrorCodes'
 
@@ -18,7 +19,8 @@ if (!validateEnv()) {
 }
 
 app.route('*', security)
-app.route('/', authRoute)
+app.route('/', sudoRoute)
+app.route('/', userRoute)
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })

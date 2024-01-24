@@ -1,13 +1,11 @@
 import { Hono } from 'hono'
-import * as userDatabase from '@database/users.database'
 import { StatusCodes } from 'http-status-codes/build/cjs/status-codes'
 import {
-  createAppValidator,
   createDashboardUserValidator,
   createUserValidator,
   signupValidator,
 } from '@validators'
-import { genUniqueUserId, hashUserDetails } from '@util/auth.util'
+import { genUniqueUserId } from '@util/auth.util'
 import {
   createDashboardUserRecipe,
   stageUserRecipe,
@@ -15,23 +13,6 @@ import {
 import { validator } from 'hono/validator'
 
 const app = new Hono()
-
-app.post(
-  '/apps',
-  validator('json', (value) => createAppValidator(value)),
-  async (c) => {
-    const { id, name, emailVerificationTokenLifetimeInMs } = c.req.valid('json')
-
-    const data = await userDatabase.createApp({
-      id,
-      name,
-      emailVerificationTokenLifetimeInMs,
-    })
-
-    c.status(StatusCodes.OK)
-    return c.json({ data })
-  },
-)
 
 app.post(
   '/dashboard-user',
