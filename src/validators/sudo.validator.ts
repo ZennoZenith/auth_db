@@ -93,3 +93,28 @@ export const updateAppValidator = (value: any) => {
     })
   }
 }
+
+export const deleteAppValidator = (value: any) => {
+  const result = safeParse(
+    object({
+      comparisonData: object(
+        {
+          id: string('App id must be a string', [
+            toTrimmed(),
+            minLength(1, 'Please enter app id'),
+            maxLength(64, 'App id string length should be less than 64'),
+          ]),
+        },
+      ),
+    }),
+    value,
+  )
+
+  if (result.success) {
+    return result.output
+  } else {
+    throw new BadRequestError({
+      message: result.issues.map((issue) => issue.message),
+    })
+  }
+}

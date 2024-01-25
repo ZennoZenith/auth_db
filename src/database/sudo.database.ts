@@ -37,12 +37,38 @@ export async function updateApp(
       eq(apps.id, comparisonData.id),
     )
     const app = await drizzleUserDb.query.apps.findFirst({
-      where: eq(apps.id, comparisonData.id),
+      where: eq(apps.id, updateData.id || comparisonData.id),
     })
 
     if (!app) {
       throw new CustomError('UnableToUpdate')
     }
+    return app
+  } catch (err: any) {
+    if (err instanceof CustomError) {
+      throw err
+    }
+    throw new MysqlError(err.errno, { message: err.message })
+  }
+}
+
+export async function deleteApp(
+  comparisonData: {
+    id: string
+  },
+) {
+  try {
+    const app = await drizzleUserDb.query.apps.findFirst({
+      where: eq(apps.id, comparisonData.id),
+    })
+
+    if (!app) {
+      throw new CustomError('UnableToDelete')
+    }
+
+    await drizzleUserDb.delete(apps).where(
+      eq(apps.id, comparisonData.id),
+    )
     return app
   } catch (err: any) {
     if (err instanceof CustomError) {

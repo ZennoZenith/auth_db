@@ -1,5 +1,8 @@
 import * as sudoDatabase from '@database/sudo.database'
-import { createAppValidator } from '@validators/sudo.validator'
+import {
+  createAppValidator,
+  deleteAppValidator,
+} from '@validators/sudo.validator'
 import { validator } from 'hono/validator'
 import { Hono } from 'hono'
 import { StatusCodes } from 'http-status-codes'
@@ -41,6 +44,19 @@ app.patch(
     const { comparisonData, updateData } = c.req.valid('json')
 
     const data = await sudoDatabase.updateApp(comparisonData, updateData)
+
+    c.status(StatusCodes.OK)
+    return c.json({ data })
+  },
+)
+
+app.delete(
+  '/apps',
+  validator('json', (value) => deleteAppValidator(value)),
+  async (c) => {
+    const { comparisonData } = c.req.valid('json')
+
+    const data = await sudoDatabase.deleteApp(comparisonData)
 
     c.status(StatusCodes.OK)
     return c.json({ data })
