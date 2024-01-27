@@ -12,7 +12,9 @@ const app = new Hono<{
   Variables: {
     ERROR: ApiErrorObject
   }
-}>()
+}>({
+  strict: true,
+}).basePath(config.basePath)
 
 if (!validateEnv()) {
   throw new Error('Invalid environment variables')

@@ -21,7 +21,6 @@ app.post(
       ...createUserValidator(value),
       ...createDashboardUserValidator(value),
     }
-    // return { ...createUserValidator(value) }
   }),
   async (c) => {
     const userData = c.req.valid('json')

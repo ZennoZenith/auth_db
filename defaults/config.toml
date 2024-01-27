@@ -26,6 +26,9 @@ emailVerificationTokenLifetime = 86400000
 # (OPTIONAL | Default: "dash_usr") string value. 
 dashboardUserIdPrefix = 'dash_usr'
 
+# (OPTIONAL | Default: ""). Used to prepend a base path to all APIs when querying the core.
+basePath = ''
+
 # (DIFFERENT_ACROSS_APPS | OPTIONAL | Default: 3600) integer value. Time in seconds for how long an access token is
 # valid for.
 # access_token_validity:
@@ -100,9 +103,6 @@ dashboardUserIdPrefix = 'dash_usr'
 # https://github.com/supertokens/supertokens-core/wiki/Telemetry
 # disable_telemetry:
 
-
-# (OPTIONAL | Default: ""). Used to prepend a base path to all APIs when querying the core.
-# base_path:
 
 # (DIFFERENT_ACROSS_APPS | OPTIONAL | Default: "BCRYPT"). The password hashing algorithm to use. Values are "ARGON2" |
 # "BCRYPT"
