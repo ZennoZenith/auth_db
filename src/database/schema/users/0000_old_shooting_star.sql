@@ -72,25 +72,6 @@ CREATE TABLE `roles` (
 	CONSTRAINT `roles_appId_role` PRIMARY KEY(`appId`,`role`)
 );
 --> statement-breakpoint
-CREATE TABLE `tenant_last_active` (
-	`tenantId` varchar(64) NOT NULL,
-	`lastActiveIp` varchar(64) NOT NULL DEFAULT 'DEFAULT_IP',
-	`lastActiveTime` timestamp NOT NULL,
-	CONSTRAINT `tenant_last_active_tenantId` PRIMARY KEY(`tenantId`)
-);
---> statement-breakpoint
-CREATE TABLE `tenants` (
-	`id` varchar(64) NOT NULL,
-	`userId` varchar(64) NOT NULL,
-	`appId` varchar(64) NOT NULL,
-	`role` varchar(256) NOT NULL,
-	`useDefaultAuth` tinyint NOT NULL DEFAULT 1,
-	`config` json NOT NULL,
-	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT `tenants_id` PRIMARY KEY(`id`),
-	CONSTRAINT `unique_tenants` UNIQUE(`appId`,`userId`)
-);
---> statement-breakpoint
 CREATE TABLE `user_last_active` (
 	`userId` varchar(64) NOT NULL,
 	`lastActiveIp` varchar(64) NOT NULL DEFAULT 'DEFAULT_IP',
@@ -98,28 +79,32 @@ CREATE TABLE `user_last_active` (
 	CONSTRAINT `user_last_active_userId` PRIMARY KEY(`userId`)
 );
 --> statement-breakpoint
-CREATE TABLE `username_password_tenants` (
-	`tenantId` varchar(64) NOT NULL,
+CREATE TABLE `username_password_users` (
+	`userId` varchar(64) NOT NULL,
 	`appId` varchar(64) NOT NULL,
 	`username` varchar(256),
 	`hashedPassword` varchar(256) NOT NULL,
 	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT `username_password_tenants_tenantId` PRIMARY KEY(`tenantId`),
+	CONSTRAINT `username_password_users_userId_appId` PRIMARY KEY(`userId`,`appId`),
 	CONSTRAINT `username_appid_unique` UNIQUE(`username`,`appId`)
 );
 --> statement-breakpoint
 CREATE TABLE `users` (
 	`id` varchar(64) NOT NULL,
+	`appId` varchar(64) NOT NULL,
+	`role` varchar(256) NOT NULL,
 	`firstName` varchar(64) NOT NULL,
 	`middleName` varchar(64),
 	`lastName` varchar(64),
 	`fullName` varchar(192),
 	`phoneNumber` varchar(20),
 	`birthday` date,
+	`usernamePasswordEnabled` tinyint NOT NULL DEFAULT 0,
 	`emailPasswordEnabled` tinyint NOT NULL DEFAULT 0,
 	`passwordlessEnabled` tinyint NOT NULL DEFAULT 0,
 	`thirdPartyEnabled` tinyint NOT NULL DEFAULT 0,
 	`userMetadata` json NOT NULL,
+	`config` json NOT NULL,
 	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `users_id` PRIMARY KEY(`id`)
@@ -139,9 +124,8 @@ CREATE INDEX `dashboard_user_sessions_expiry_index` ON `dashboard_user_sessions`
 CREATE INDEX `userId` ON `dashboard_users` (`userId`);--> statement-breakpoint
 CREATE INDEX `stagingUserId` ON `emailverification_tokens` (`stagingUserId`,`email`);--> statement-breakpoint
 CREATE INDEX `role_permissions_index` ON `role_permissions` (`role`,`permission`);--> statement-breakpoint
-CREATE INDEX `appId` ON `tenants` (`appId`,`role`);--> statement-breakpoint
-CREATE INDEX `userId` ON `tenants` (`userId`);--> statement-breakpoint
-CREATE INDEX `appId` ON `username_password_tenants` (`appId`);--> statement-breakpoint
+CREATE INDEX `appId` ON `username_password_users` (`appId`,`userId`);--> statement-breakpoint
+CREATE INDEX `appId` ON `users` (`appId`);--> statement-breakpoint
 ALTER TABLE `dashboard_user_sessions` ADD CONSTRAINT `dashboard_user_sessions_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `dashboard_users`(`userId`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `dashboard_users` ADD CONSTRAINT `dashboard_users_ibfk_1` FOREIGN KEY (`appId`) REFERENCES `apps`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `dashboard_users` ADD CONSTRAINT `dashboard_users_ibfk_2` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -150,10 +134,7 @@ ALTER TABLE `emailpassword_pswd_reset_tokens` ADD CONSTRAINT `emailpassword_pswd
 ALTER TABLE `emailverification_tokens` ADD CONSTRAINT `emailverification_tokens_ibfk_1` FOREIGN KEY (`stagingUserId`,`email`) REFERENCES `users_staging_email`(`id`,`email`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `role_permissions` ADD CONSTRAINT `role_permissions_ibfk_1` FOREIGN KEY (`appId`,`role`) REFERENCES `roles`(`appId`,`role`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `roles` ADD CONSTRAINT `roles_ibfk_1` FOREIGN KEY (`appId`) REFERENCES `apps`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `tenant_last_active` ADD CONSTRAINT `tenant_last_active_ibfk_1` FOREIGN KEY (`tenantId`) REFERENCES `tenants`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE `tenants` ADD CONSTRAINT `tenants_ibfk_1` FOREIGN KEY (`appId`,`role`) REFERENCES `roles`(`appId`,`role`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `tenants` ADD CONSTRAINT `tenants_ibfk_2` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE `user_last_active` ADD CONSTRAINT `user_last_active_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `username_password_tenants` ADD CONSTRAINT `username_password_tenants_ibfk_1` FOREIGN KEY (`tenantId`) REFERENCES `tenants`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE `username_password_tenants` ADD CONSTRAINT `username_password_tenants_ibfk_2` FOREIGN KEY (`appId`) REFERENCES `apps`(`id`) ON DELETE cascade ON UPDATE cascade;
+ALTER TABLE `username_password_users` ADD CONSTRAINT `username_password_users_ibfk_1` FOREIGN KEY (`appId`,`userId`) REFERENCES `users`(`appId`,`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE `users` ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`appId`) REFERENCES `apps`(`id`) ON DELETE cascade ON UPDATE cascade;
 */

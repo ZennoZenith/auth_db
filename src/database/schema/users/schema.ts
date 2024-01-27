@@ -181,50 +181,6 @@ export const roles = mysqlTable('roles', {
   }
 })
 
-export const tenantLastActive = mysqlTable('tenant_last_active', {
-  tenantId: varchar('tenantId', { length: 64 }).notNull().references(
-    () => tenants.id,
-    { onDelete: 'cascade', onUpdate: 'cascade' },
-  ),
-  lastActiveIp: varchar('lastActiveIp', { length: 64 }).default('DEFAULT_IP')
-    .notNull(),
-  lastActiveTime: timestamp('lastActiveTime', { mode: 'string' }).notNull(),
-}, (table) => {
-  return {
-    tenantLastActiveTenantId: primaryKey({
-      columns: [table.tenantId],
-      name: 'tenant_last_active_tenantId',
-    }),
-  }
-})
-
-export const tenants = mysqlTable('tenants', {
-  id: varchar('id', { length: 64 }).notNull(),
-  userId: varchar('userId', { length: 64 }).notNull().references(
-    () => users.id,
-    { onDelete: 'cascade', onUpdate: 'cascade' },
-  ),
-  appId: varchar('appId', { length: 64 }).notNull(),
-  role: varchar('role', { length: 256 }).notNull(),
-  useDefaultAuth: tinyint('useDefaultAuth').default(1).notNull(),
-  config: json('config').notNull(),
-  createdAt: timestamp('createdAt', { mode: 'string' }).default(
-    sql`CURRENT_TIMESTAMP`,
-  ).notNull(),
-}, (table) => {
-  return {
-    appId: index('appId').on(table.appId, table.role),
-    userId: index('userId').on(table.userId),
-    tenantsIbfk1: foreignKey({
-      columns: [table.appId, table.role],
-      foreignColumns: [roles.appId, roles.role],
-      name: 'tenants_ibfk_1',
-    }).onDelete('cascade'),
-    tenantsId: primaryKey({ columns: [table.id], name: 'tenants_id' }),
-    uniqueTenants: unique('unique_tenants').on(table.appId, table.userId),
-  }
-})
-
 export const userLastActive = mysqlTable('user_last_active', {
   userId: varchar('userId', { length: 64 }).notNull().references(
     () => users.id,
@@ -242,15 +198,9 @@ export const userLastActive = mysqlTable('user_last_active', {
   }
 })
 
-export const usernamePasswordTenants = mysqlTable('username_password_tenants', {
-  tenantId: varchar('tenantId', { length: 64 }).notNull().references(
-    () => tenants.id,
-    { onDelete: 'cascade', onUpdate: 'cascade' },
-  ),
-  appId: varchar('appId', { length: 64 }).notNull().references(() => apps.id, {
-    onDelete: 'cascade',
-    onUpdate: 'cascade',
-  }),
+export const usernamePasswordUsers = mysqlTable('username_password_users', {
+  userId: varchar('userId', { length: 64 }).notNull(),
+  appId: varchar('appId', { length: 64 }).notNull(),
   username: varchar('username', { length: 256 }),
   hashedPassword: varchar('hashedPassword', { length: 256 }).notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).default(
@@ -258,10 +208,15 @@ export const usernamePasswordTenants = mysqlTable('username_password_tenants', {
   ).notNull(),
 }, (table) => {
   return {
-    appId: index('appId').on(table.appId),
-    usernamePasswordTenantsTenantId: primaryKey({
-      columns: [table.tenantId],
-      name: 'username_password_tenants_tenantId',
+    appId: index('appId').on(table.appId, table.userId),
+    usernamePasswordUsersIbfk1: foreignKey({
+      columns: [table.appId, table.userId],
+      foreignColumns: [users.appId, users.id],
+      name: 'username_password_users_ibfk_1',
+    }).onUpdate('cascade').onDelete('cascade'),
+    usernamePasswordUsersUserIdAppId: primaryKey({
+      columns: [table.userId, table.appId],
+      name: 'username_password_users_userId_appId',
     }),
     usernameAppidUnique: unique('username_appid_unique').on(
       table.username,
@@ -272,6 +227,11 @@ export const usernamePasswordTenants = mysqlTable('username_password_tenants', {
 
 export const users = mysqlTable('users', {
   id: varchar('id', { length: 64 }).notNull(),
+  appId: varchar('appId', { length: 64 }).notNull().references(() => apps.id, {
+    onDelete: 'cascade',
+    onUpdate: 'cascade',
+  }),
+  role: varchar('role', { length: 256 }).notNull(),
   firstName: varchar('firstName', { length: 64 }).notNull(),
   middleName: varchar('middleName', { length: 64 }),
   lastName: varchar('lastName', { length: 64 }),
@@ -279,10 +239,13 @@ export const users = mysqlTable('users', {
   phoneNumber: varchar('phoneNumber', { length: 20 }),
   // you can use { mode: 'date' }, if you want to have Date as type for this column
   birthday: date('birthday', { mode: 'string' }),
+  usernamePasswordEnabled: tinyint('usernamePasswordEnabled').default(0)
+    .notNull(),
   emailPasswordEnabled: tinyint('emailPasswordEnabled').default(0).notNull(),
   passwordlessEnabled: tinyint('passwordlessEnabled').default(0).notNull(),
   thirdPartyEnabled: tinyint('thirdPartyEnabled').default(0).notNull(),
   userMetadata: json('userMetadata').notNull(),
+  config: json('config').notNull(),
   createdAt: timestamp('createdAt', { mode: 'string' }).default(
     sql`CURRENT_TIMESTAMP`,
   ).notNull(),
@@ -291,6 +254,7 @@ export const users = mysqlTable('users', {
   ).onUpdateNow().notNull(),
 }, (table) => {
   return {
+    appId: index('appId').on(table.appId),
     usersId: primaryKey({ columns: [table.id], name: 'users_id' }),
   }
 })

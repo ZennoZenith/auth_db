@@ -12,21 +12,43 @@ CREATE TABLE `apps` (
     UNIQUE KEY (`name`)
 );
 
+CREATE TABLE `roles` (
+    `appId` varchar(64) NOT NULL,
+    `role` varchar(256) NOT NULL,
+    PRIMARY KEY (`appId`, `role`),
+    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `role_permissions` (
+    `appId` varchar(64) NOT NULL,
+    `role` varchar(256) NOT NULL,
+    `permission` varchar(256) NOT NULL,
+    PRIMARY KEY (`appId`, `role`, `permission`),
+    FOREIGN KEY (`appId`, `role`) REFERENCES `roles` (`appId`, `role`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX `role_permissions_index` ON `role_permissions` (`role`, `permission`);
+
 CREATE TABLE `users` (
     `id` varchar(64),
+    `appId` varchar(64) NOT NULL,
+    `role` varchar(256) NOT NULL,
     `firstName` varchar(64) NOT NULL,
     `middleName` varchar(64) DEFAULT NULL,
     `lastName` varchar(64) DEFAULT NULL,
     `fullName` varchar(192) GENERATED ALWAYS AS (CONCAT_WS(' ',firstName, middleName, lastName)),
     `phoneNumber` varchar(20) DEFAULT NULL,
     `birthday` DATE DEFAULT NULL,
+    `usernamePasswordEnabled` tinyint NOT NULL DEFAULT 0,
     `emailPasswordEnabled` tinyint NOT NULL DEFAULT 0,
     `passwordlessEnabled` tinyint NOT NULL DEFAULT 0,
     `thirdPartyEnabled` tinyint NOT NULL DEFAULT 0,
     `userMetadata` JSON NOT NULL,
+    `config` JSON NOT NULL,
     `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
     `updatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `user_last_active` (
@@ -104,55 +126,15 @@ CREATE TABLE `emailpassword_pswd_reset_tokens` (
     FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE `roles` (
-    `appId` varchar(64) NOT NULL,
-    `role` varchar(256) NOT NULL,
-    PRIMARY KEY (`appId`, `role`),
-    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE `role_permissions` (
-    `appId` varchar(64) NOT NULL,
-    `role` varchar(256) NOT NULL,
-    `permission` varchar(256) NOT NULL,
-    PRIMARY KEY (`appId`, `role`, `permission`),
-    FOREIGN KEY (`appId`, `role`) REFERENCES `roles` (`appId`, `role`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE INDEX `role_permissions_index` ON `role_permissions` (`role`, `permission`);
-
-CREATE TABLE `tenants` (
-    `id` varchar(64) NOT NULL,
+CREATE TABLE `username_password_users` (
     `userId` varchar(64) NOT NULL,
-    `appId` varchar(64) NOT NULL,
-    `role` varchar(256) NOT NULL,
-    `useDefaultAuth` tinyint NOT NULL DEFAULT 1,
-    `config` JSON NOT NULL,
-    `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `unique_tenants` (`appId`,`userId`),
-    FOREIGN KEY (`appId`, `role`) REFERENCES `roles` (`appId`, `role`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE `tenant_last_active` (
-    `tenantId` varchar(64) NOT NULL,
-    `lastActiveIp` varchar(64) NOT NULL DEFAULT 'DEFAULT_IP',
-    `lastActiveTime` timestamp NOT NULL,
-    PRIMARY KEY (`tenantId`),
-    FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE `username_password_tenants` (
-    `tenantId` varchar(64) NOT NULL,
     `appId` varchar(64) NOT NULL,
     `username` varchar(256) DEFAULT NULL,
     `hashedPassword` varchar(256) NOT NULL,
     `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (`tenantId`),
+    PRIMARY KEY (`userId`, `appId`),
     UNIQUE KEY `username_appid_unique` (`username`, `appId`),
-    FOREIGN KEY (`tenantId`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`appId`) REFERENCES `apps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (`appId`, `userId`) REFERENCES `users` (`appId`, `id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 INSERT INTO `apps` (`id`, `name`) VALUES ('DEFAULT' ,'My App');

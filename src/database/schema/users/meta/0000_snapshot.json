@@ -569,178 +569,6 @@
       },
       "uniqueConstraints": {}
     },
-    "tenant_last_active": {
-      "name": "tenant_last_active",
-      "columns": {
-        "tenantId": {
-          "autoincrement": false,
-          "name": "tenantId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lastActiveIp": {
-          "default": "'DEFAULT_IP'",
-          "autoincrement": false,
-          "name": "lastActiveIp",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lastActiveTime": {
-          "autoincrement": false,
-          "name": "lastActiveTime",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {
-        "tenant_last_active_tenantId": {
-          "name": "tenant_last_active_tenantId",
-          "columns": [
-            "tenantId"
-          ]
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "tenant_last_active_ibfk_1": {
-          "name": "tenant_last_active_ibfk_1",
-          "tableFrom": "tenant_last_active",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenantId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "uniqueConstraints": {}
-    },
-    "tenants": {
-      "name": "tenants",
-      "columns": {
-        "id": {
-          "autoincrement": false,
-          "name": "id",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "userId": {
-          "autoincrement": false,
-          "name": "userId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "appId": {
-          "autoincrement": false,
-          "name": "appId",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "role": {
-          "autoincrement": false,
-          "name": "role",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "useDefaultAuth": {
-          "default": 1,
-          "autoincrement": false,
-          "name": "useDefaultAuth",
-          "type": "tinyint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "config": {
-          "autoincrement": false,
-          "name": "config",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "createdAt": {
-          "default": "CURRENT_TIMESTAMP",
-          "autoincrement": false,
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {
-        "tenants_id": {
-          "name": "tenants_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "indexes": {
-        "appId": {
-          "name": "appId",
-          "columns": [
-            "appId",
-            "role"
-          ],
-          "isUnique": false
-        },
-        "userId": {
-          "name": "userId",
-          "columns": [
-            "userId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "tenants_ibfk_1": {
-          "name": "tenants_ibfk_1",
-          "tableFrom": "tenants",
-          "tableTo": "roles",
-          "columnsFrom": [
-            "appId",
-            "role"
-          ],
-          "columnsTo": [
-            "appId",
-            "role"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "tenants_ibfk_2": {
-          "name": "tenants_ibfk_2",
-          "tableFrom": "tenants",
-          "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "uniqueConstraints": {
-        "unique_tenants": {
-          "name": "unique_tenants",
-          "columns": [
-            "appId",
-            "userId"
-          ]
-        }
-      }
-    },
     "user_last_active": {
       "name": "user_last_active",
       "columns": {
@@ -793,12 +621,12 @@
       },
       "uniqueConstraints": {}
     },
-    "username_password_tenants": {
-      "name": "username_password_tenants",
+    "username_password_users": {
+      "name": "username_password_users",
       "columns": {
-        "tenantId": {
+        "userId": {
           "autoincrement": false,
-          "name": "tenantId",
+          "name": "userId",
           "type": "varchar(64)",
           "primaryKey": false,
           "notNull": true
@@ -834,10 +662,11 @@
         }
       },
       "compositePrimaryKeys": {
-        "username_password_tenants_tenantId": {
-          "name": "username_password_tenants_tenantId",
+        "username_password_users_userId_appId": {
+          "name": "username_password_users_userId_appId",
           "columns": [
-            "tenantId"
+            "userId",
+            "appId"
           ]
         }
       },
@@ -845,33 +674,23 @@
         "appId": {
           "name": "appId",
           "columns": [
-            "appId"
+            "appId",
+            "userId"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "username_password_tenants_ibfk_1": {
-          "name": "username_password_tenants_ibfk_1",
-          "tableFrom": "username_password_tenants",
-          "tableTo": "tenants",
+        "username_password_users_ibfk_1": {
+          "name": "username_password_users_ibfk_1",
+          "tableFrom": "username_password_users",
+          "tableTo": "users",
           "columnsFrom": [
-            "tenantId"
+            "appId",
+            "userId"
           ],
           "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "username_password_tenants_ibfk_2": {
-          "name": "username_password_tenants_ibfk_2",
-          "tableFrom": "username_password_tenants",
-          "tableTo": "apps",
-          "columnsFrom": [
-            "appId"
-          ],
-          "columnsTo": [
+            "appId",
             "id"
           ],
           "onDelete": "cascade",
@@ -895,6 +714,20 @@
           "autoincrement": false,
           "name": "id",
           "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "appId": {
+          "autoincrement": false,
+          "name": "appId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "autoincrement": false,
+          "name": "role",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
         },
@@ -940,6 +773,14 @@
           "primaryKey": false,
           "notNull": false
         },
+        "usernamePasswordEnabled": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "usernamePasswordEnabled",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true
+        },
         "emailPasswordEnabled": {
           "default": 0,
           "autoincrement": false,
@@ -971,6 +812,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "config": {
+          "autoincrement": false,
+          "name": "config",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
         "createdAt": {
           "default": "CURRENT_TIMESTAMP",
           "autoincrement": false,
@@ -997,8 +845,30 @@
           ]
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "appId": {
+          "name": "appId",
+          "columns": [
+            "appId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "users_ibfk_1": {
+          "name": "users_ibfk_1",
+          "tableFrom": "users",
+          "tableTo": "apps",
+          "columnsFrom": [
+            "appId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "uniqueConstraints": {}
     },
     "users_staging_email": {

@@ -12,9 +12,6 @@ type Config = {
 }
 
 function loadCustomConfig() {
-  // process.argv.findIndex((val, index) => {
-  //   console.log(val)
-  // })
   const index = process.argv.findIndex((val) => {
     if (val === '--config') {
       return true
