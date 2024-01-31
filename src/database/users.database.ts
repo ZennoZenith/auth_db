@@ -17,7 +17,7 @@ export async function createUser(
     })
     return user!
   } catch (err: any) {
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }
 
@@ -37,7 +37,7 @@ export async function createDashboardUser(
     })
     return user!
   } catch (err: any) {
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }
 
@@ -65,7 +65,7 @@ export async function stageUser(
     })
     return user!
   } catch (err: any) {
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }
 

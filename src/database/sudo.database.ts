@@ -13,7 +13,7 @@ export async function createApp(
     })
     return app!
   } catch (err: any) {
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }
 
@@ -22,7 +22,7 @@ export async function getAllApps() {
     const app = await drizzleUserDb.query.apps.findMany()
     return app!
   } catch (err: any) {
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }
 
@@ -48,7 +48,7 @@ export async function updateApp(
     if (err instanceof CustomError) {
       throw err
     }
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }
 
@@ -74,6 +74,6 @@ export async function deleteApp(
     if (err instanceof CustomError) {
       throw err
     }
-    throw new MysqlError(err.errno, { message: err.message })
+    throw new MysqlError(err, { message: err.message })
   }
 }

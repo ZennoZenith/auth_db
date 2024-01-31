@@ -1,4 +1,4 @@
-import { ConflictError } from '@errors/index'
+import { BadRequestError, ConflictError, DontCareError } from '@errors/index'
 import { ApiExtraError } from './ErrorCodes'
 import {
   GetMysqlError,
@@ -10,27 +10,31 @@ import {
 import CustomError from './custom-error'
 
 export default class MysqlError extends CustomError {
-  static IsMysqlError(errorNumber: number): boolean
-  static IsMysqlError(code: string): boolean
-  static IsMysqlError(a: any): boolean {
-    if (typeof a === 'number') {
-      return IsMysqlErrorFromNumber(a)
+  static IsMysqlError(e: any): boolean {
+    if (typeof e.errno === 'number') {
+      return IsMysqlErrorFromNumber(e.errno)
     }
-    if (typeof a === 'string') {
-      return IsMysqlErrorFromSymbol(a)
+    if (typeof e.code === 'string') {
+      return IsMysqlErrorFromSymbol(e.code)
     }
     return false
   }
 
-  constructor(e: number, extra?: ApiExtraError)
-  constructor(e: string, extra?: ApiExtraError)
   constructor(e: any, extra: ApiExtraError = { message: '' }) {
-    super('DontCare')
+    super('UnDocumentedError', { message: 'Unknow SQL error' })
     if (!MysqlError.IsMysqlError(e)) {
-      return
+      console.log(e)
+      return new DontCareError({ message: e.message })
+      // return
     }
-    if (GetMysqlError(e as MysqlErrorNumber).symbol === 'ER_DUP_ENTRY') {
+
+    const errorSymbol = GetMysqlError(e.errno as MysqlErrorNumber).symbol
+    if (errorSymbol === 'ER_DUP_ENTRY') {
       return new ConflictError({ message: 'Duplicate entry' })
+    }
+
+    if (errorSymbol === 'ER_NO_DEFAULT_FOR_FIELD') {
+      return new BadRequestError({ message: 'Some field are missing' })
     }
   }
 }

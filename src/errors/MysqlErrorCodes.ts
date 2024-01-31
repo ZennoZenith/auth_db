@@ -15,6 +15,14 @@ export const MysqlErrors = [
     description:
       'The message returned with this error uses the format string for ER_DUP_ENTRY_WITH_KEY_NAME.',
   },
+  // TODO
+  {
+    errorNumber: 1364,
+    symbol: 'ER_NO_DEFAULT_FOR_FIELD',
+    sqlState: '23000',
+    message: '',
+    description: '',
+  },
 ] as const satisfies MysqlErrorType[]
 
 export type MysqlErrorNumber = typeof MysqlErrors[number]['errorNumber']
